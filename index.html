@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Fichaje - Vicky Foods</title>
+    <!-- Cargamos Chart.js para el gráfico de barras -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --vf-orange: #E5511D;
+            --vf-blue: #0082C8;
+            --vf-bg: #F4F6F8;
+            --btn-green: #00A651;
+            --btn-yellow: #FFB300;
+            --btn-blue: #0082C8;
+            --btn-red: #E53935;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--vf-bg); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 15px; 
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Encabezado con Logo */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .app-title {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #222;
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin: 8px 4px 12px 4px;
+        }
+
+        /* Grid de los 4 Botones */
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px; 
+            border: none; 
+            border-radius: 16px; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: white; 
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            line-height: 1.3;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .btn-1 { background-color: var(--btn-green); }
+        .btn-2 { background-color: var(--btn-yellow); }
+        .btn-3 { background-color: var(--btn-blue); }
+        .btn-4 { background-color: var(--btn-red); }
+
+        .btn:disabled { 
+            opacity: 0.35; 
+            cursor: not-allowed; 
+            filter: grayscale(30%);
+            box-shadow: none;
+        }
+
+        /* Controles de Navegación de Semanas */
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .nav-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #444;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #e0e0e0;
+        }
+
+        /* Tarjeta del Gráfico */
+        .card-chart { 
+            background: white; 
+            padding: 16px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+            margin-bottom: 15px; 
+        }
+
+        .chart-container {
+            position: relative;
+            height: 170px;
+            width: 100%;
+        }
+
+        .weekly-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-weight: 700;
+            font-size: 15px;
+            color: #222;
+        }
+
+        .weekly-total-val {
+            font-weight: 800;
+            font-size: 16px;
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img src="img/vicky-foods.png" alt="Logo Vicky Foods" class="logo-img">
+        <p class="app-title">Control de Fichaje</p>
+    </div>
+
+    <div class="section-subtitle">Resumen Semanal</div>
+
+    <!-- Botones principales -->
+    <div class="button-grid">
+        <button id="btn-entrada" class="btn btn-1" onclick="registrar('entrada')">
+            <span class="btn-icon">➔</span>
+            <span>1. ENTRADA A TRABAJAR</span>
+        </button>
+
+        <button id="btn-salida_almuerzo" class="btn btn-2" onclick="registrar('salida_almuerzo')">
+            <span class="btn-icon">⇆</span>
+            <span>2. SALIDA ALMUERZO</span>
+        </button>
+
+        <button id="btn-vuelta_almuerzo" class="btn btn-3" onclick="registrar('vuelta_almuerzo')">
+            <span class="btn-icon">➔</span>
+            <span>3. VUELTA ALMUERZO</span>
+        </button>
+
+        <button id="btn-salida_casa" class="btn btn-4" onclick="registrar('salida_casa')">
+            <span class="btn-icon">⤶</span>
+            <span>4. SALIDA A CASA</span>
+        </button>
+    </div>
+
+    <!-- Navegación entre semanas -->
+    <div class="week-navigation">
+        <button class="nav-btn" onclick="cambiarSemana(-1)">◀ Anterior</button>
+        <span id="label-semana">Semana Actual</span>
+        <button class="nav-btn" onclick="cambiarSemana(1)">Siguiente ▶</button>
+    </div>
+
+    <!-- Gráfico de barras -->
+    <div class="card-chart">
+        <div class="chart-container">
+            <canvas id="weeklyChart"></canvas>
+        </div>
+        <div class="weekly-total-row">
+            <span>Horas Totales Semanales</span>
+            <span id="total-semana-val" class="weekly-total-val">0,00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chartInstance = null;
+    let offsetSemanas = 0; // 0 = semana actual, -1 = semana anterior, 1 = semana posterior
+
+    function obtenerFechaFormato(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    function cambiarSemana(direccion) {
+        offsetSemanas += direccion;
+        actualizarUI();
+    }
+
+    function obtenerSemanaSeleccionada() {
+        const hoy = new Date();
+        // Aplicar el desplazamiento de semanas
+        hoy.setDate(hoy.getDate() + (offsetSemanas * 7));
+        
+        const diaSemana = hoy.getDay(); 
+        const diffAlLunes = (diaSemana === 0 ? -6 : 1) - diaSemana; 
+        
+        const lunes = new Date(hoy);
+        lunes.setDate(hoy.getDate() + diffAlLunes);
+
+        const dias = [];
+        const nombresDias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(lunes);
+            d.setDate(lunes.getDate() + i);
+            dias.push({
+                nombre: nombresDias[i],
+                fechaStr: obtenerFechaFormato(d)
+            });
+        }
+        return dias;
+    }
+
+    function calcularHorasDecimales(registro) {
+        if (!registro) return 0;
+        let totalMs = 0;
+        if (registro.entrada && registro.salida_almuerzo) {
+            totalMs += (registro.salida_almuerzo - registro.entrada);
+        }
+        if (registro.vuelta_almuerzo && registro.salida_casa) {
+            totalMs += (registro.salida_casa - registro.vuelta_almuerzo);
+        }
+        return totalMs / (1000 * 60 * 60);
+    }
+
+    function registrar(tipo) {
+        let datos = JSON.parse(localStorage.getItem('fichajes_vf_v2')) || {};
+        const hoy = obtenerFechaFormato(new Date());
+        
+        if (!datos[hoy]) datos[hoy] = {};
+        datos[hoy][tipo] = Date.now();
+        
+        localStorage.setItem('fichajes_vf_v2', JSON.stringify(datos));
+        actualizarUI();
+    }
+
+    function actualizarUI() {
+        const hoyStr = obtenerFechaFormato(new Date());
+        let datos = JSON.parse(localStorage.getItem('fichajes_vf_v2')) || {};
+        let registroHoy = datos[hoyStr] || {};
+
+        // Deshabilitar botones solo para la fecha de hoy
+        document.getElementById('btn-entrada').disabled = !!registroHoy.entrada;
+        document.getElementById('btn-salida_almuerzo').disabled = !!registroHoy.salida_almuerzo;
+        document.getElementById('btn-vuelta_almuerzo').disabled = !!registroHoy.vuelta_almuerzo;
+        document.getElementById('btn-salida_casa').disabled = !!registroHoy.salida_casa;
+
+        // Actualizar etiqueta del selector de semanas
+        const labelSemana = document.getElementById('label-semana');
+        if (offsetSemanas === 0) {
+            labelSemana.innerText = "Semana Actual";
+        } else if (offsetSemanas === -1) {
+            labelSemana.innerText = "Semana Pasada";
+        } else if (offsetSemanas < -1) {
+            labelSemana.innerText = `Hace ${Math.abs(offsetSemanas)} semanas`;
+        } else {
+            labelSemana.innerText = `En ${offsetSemanas} semana(s)`;
+        }
+
+        // Construir datos de la semana seleccionada
+        const diasSemana = obtenerSemanaSeleccionada();
+        const labels = [];
+        const dataHoras = [];
+        const barColors = ['#00A651', '#00A651', '#FFB300', '#00A651', '#E53935', '#00A651', '#00A651'];
+        let totalHorasSemana = 0;
+
+        diasSemana.forEach((d) => {
+            labels.push(d.nombre);
+            const horas = calcularHorasDecimales(datos[d.fechaStr]);
+            dataHoras.push(horas.toFixed(2));
+            totalHorasSemana += horas;
+        });
+
+        document.getElementById('total-semana-val').innerText = totalHorasSemana.toFixed(2).replace('.', ',');
+
+        renderOrUpdateChart(labels, dataHoras, barColors);
+    }
+
+    function renderOrUpdateChart(labels, dataHoras, colors) {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        
+        if (chartInstance) {
+            chartInstance.data.labels = labels;
+            chartInstance.data.datasets[0].data = dataHoras;
+            chartInstance.update();
+            return;
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataHoras,
+                    backgroundColor: colors,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 18
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.raw} horas`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        grid: { color: '#f0f0f0' },
+                        ticks: { stepSize: 2, font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    actualizarUI();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('Service Worker registrado correctamente.'))
+      .catch(err => console.error('Error al registrar Service Worker:', err));
+  }
+</script>
+
+</body>
+</html>

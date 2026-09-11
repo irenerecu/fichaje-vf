@@ -1,0 +1,16 @@
+{
+  "short_name": "Fichaje VF",
+  "name": "Control de Fichaje - Vicky Foods",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#F4F6F8",
+  "theme_color": "#E5511D",
+  "display": "standalone",
+  "orientation": "portrait"
+}
